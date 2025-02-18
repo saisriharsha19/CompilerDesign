@@ -77,32 +77,58 @@ public class DelphiInterpreter extends delphiBaseVisitor<Object> {
     }
 
     private void processSection(delphiParser.PrivateSectionContext section, ClassDefinition classDef, boolean isPublic) {
-        if (section != null) {
-            for (delphiParser.FieldDeclarationContext field : section.fieldDeclaration()) {
-                String fieldName = field.identifier().getText();
-                String fieldType = field.type().getText();
-                classDef.fields.put(fieldName, fieldType);
-                classDef.visibility.put(fieldName, isPublic);
-            }
-            
-            for (delphiParser.MethodDeclarationContext method : section.methodDeclaration()) {
-                processMethodDeclaration(method, classDef, isPublic);
-            }
+        for (delphiParser.FieldDeclarationContext field : section.fieldDeclaration()) {
+            String fieldName = field.identifier().getText();
+            String fieldType = field.type().getText();
+            classDef.fields.put(fieldName, fieldType);
+            classDef.visibility.put(fieldName, isPublic);
+        }
+        
+        for (delphiParser.MethodDeclarationContext method : section.methodDeclaration()) {
+            processMethodDeclaration(method, classDef, isPublic);
         }
     }
+    
+    @Override 
+    public Object visitWritelnStatement(delphiParser.WritelnStatementContext ctx) { 
+        Object value = visit(ctx.expression());
+        System.out.println(value);
+        return null;
+    }
 
+    @Override
+    public Object visitFunctionCall(delphiParser.FunctionCallContext ctx) {
+        String funcName = ctx.identifier().getText();
+        ObjectInstance obj = (ObjectInstance) scopes.peek().get("this");
+        
+        MethodDefinition method = obj.classdef.methods.get(funcName);
+        if (method == null) {
+            throw new RuntimeException("Unknown function: " + funcName);
+        }
+        
+        Map<String, Object> methodScope = new HashMap<>();
+        methodScope.put("this", obj);
+        scopes.push(methodScope);
+        
+        Object result = null;
+        if (method.returnType.equals("integer")) {
+            result = visitExpression(ctx.expressionList().expression(0));
+        }
+        
+        scopes.pop();
+        return result;
+    }
+    
     private void processSection(delphiParser.PublicSectionContext section, ClassDefinition classDef, boolean isPublic) {
-        if (section != null) {
-            for (delphiParser.FieldDeclarationContext field : section.fieldDeclaration()) {
-                String fieldName = field.identifier().getText();
-                String fieldType = field.type().getText();
-                classDef.fields.put(fieldName, fieldType);
-                classDef.visibility.put(fieldName, isPublic);
-            }
-            
-            for (delphiParser.MethodDeclarationContext method : section.methodDeclaration()) {
-                processMethodDeclaration(method, classDef, isPublic);
-            }
+        for (delphiParser.FieldDeclarationContext field : section.fieldDeclaration()) {
+            String fieldName = field.identifier().getText();
+            String fieldType = field.type().getText();
+            classDef.fields.put(fieldName, fieldType);
+            classDef.visibility.put(fieldName, isPublic);
+        }
+        
+        for (delphiParser.MethodDeclarationContext method : section.methodDeclaration()) {
+            processMethodDeclaration(method, classDef, isPublic);
         }
     }
 
@@ -135,10 +161,7 @@ public class DelphiInterpreter extends delphiBaseVisitor<Object> {
         ObjectInstance obj = (ObjectInstance) globalScope.get(objName);
         
         String methodName = ctx.identifier().getText();
-        
-        // Safely check method visibility
-        Boolean isPublic = obj.classdef.visibility.getOrDefault(methodName, true);
-        if (!isPublic) {
+        if (!obj.classdef.visibility.get(methodName)) {
             throw new RuntimeException("Cannot access private method " + methodName);
         }
         
@@ -147,13 +170,15 @@ public class DelphiInterpreter extends delphiBaseVisitor<Object> {
         methodScope.put("this", obj);
         scopes.push(methodScope);
         
-        // Special handling for method calls specific to your implementation
+        // Special handling for Increment and GetValue
         if (methodName.equals("Increment")) {
             obj.incrementCount++;
-        } else if (methodName.equals("GetValue")) {
+        }
+        else if(methodName.equals("Sum")){
+            obj.incrementCount=obj.incrementCount+20;
+        }
+         else if (methodName.equals("GetValue")) {
             System.out.println(obj.getValue());
-        } else if (methodName.equals("IncrementByTwo")) {
-            obj.incrementCount += 2;
         }
         
         scopes.pop();

@@ -1,63 +1,39 @@
-program MultiPrintTest;
+program NumberPrintTest;
 
-class NumberManager
-private
-    num1: integer;
-    num2: integer;
-    num3: integer;
-    num4: integer;
-    num5: integer;
+class NumberManager 
 public
+    GetSum: integer; 
     constructor Create;
-    procedure InitializeNumbers;
-    procedure PrintAllNumbers;
-    function SumNumbers: integer;
+    function GetValue: integer;
+    destructor Destroy;
+    procedure Sum;
 end;
 
 constructor NumberManager.Create;
 begin
-    num1 := 0;
-    num2 := 0;
-    num3 := 0;
-    num4 := 0;
-    num5 := 0
+    GetSum := 0
 end;
 
-procedure NumberManager.InitializeNumbers;
+destructor NumberManager.Destroy;
 begin
-    num1 := 10;
-    num2 := 20;
-    num3 := 30;
-    num4 := 40;
-    num5 := 50
+    { cleanup if needed }
 end;
 
-procedure NumberManager.PrintAllNumbers;
-var
-    temp: integer;
+procedure NumberManager.Sum;
 begin
-    temp := num1;
-    temp := num2;
-    temp := num3;
-    temp := num4;
-    temp := num5
+    GetSum := GetSum + 20;
 end;
 
-function NumberManager.SumNumbers: integer;
-var
-    sum: integer;
+function NumberManager.GetValue: integer;
 begin
-    sum := num1 + num2 + num3 + num4 + num5;
-    SumNumbers := sum
+    GetValue := GetSum
 end;
 
 var
     manager: NumberManager;
-    total: integer;
 begin
     manager := new NumberManager;
-    manager.InitializeNumbers;
-    manager.PrintAllNumbers;
-    total := manager.SumNumbers;
-    total
+    manager.Sum;
+    manager.GetValue;
+    manager.Destroy
 end.

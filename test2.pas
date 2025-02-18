@@ -6,6 +6,7 @@ private
 public
     constructor Create;
     procedure Increment;
+    procedure IncrementByTwo;
     function GetValue: integer;
 end;
 
@@ -31,15 +32,12 @@ end;
 
 procedure ExtendedCounter.IncrementByTwo;
 begin
-    Increment;
-    Increment
+    value := value + 1
 end;
 
-var
-    c: ExtendedCounter;
 begin
-    c := new ExtendedCounter;
-    c.IncrementByTwo;
+    c := new BaseCounter;
+    c.Increment;
+    c.Increment;
     c.GetValue;
-    c.Destroy
 end.

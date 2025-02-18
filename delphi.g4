@@ -119,8 +119,15 @@ statement
     | ifStatement
     | whileStatement
     | compoundStatement
+    | writelnStatement
     | emptyStatement
     ;
+
+writelnStatement
+    : WRITELN LPAREN expression RPAREN
+    ;
+
+WRITELN : 'writeln';
 
 assignmentStatement
     : variable ASSIGN expression
